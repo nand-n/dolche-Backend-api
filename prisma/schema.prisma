@@ -1,0 +1,206 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String    @id @default(uuid())
+  username         String    @unique
+  phone            String    @unique
+  email            String    @unique
+  password         String
+  payments         Payment[]
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  isAdmin          Boolean   @default(false)
+  Token            Token[]
+  Post             Post[]
+  verificationCode Int?
+  isVerified       Boolean   @default(false)
+  resetToken       String?
+  resetTokenExpiry DateTime?
+
+  transaction Transaction[]
+  account     Account[]
+  FicoScore   FicoScore[]
+
+  creditAccount CreditAccount[]
+  equb          Equb[]
+  selctedEqub   SelectedEqub[]
+  branch        Branch[]
+  agent         Agent[]
+}
+
+model Payment {
+  id                 String    @id @default(uuid())
+  packageName        String    @db.VarChar(255)
+  belogsToId         String?
+  belongsTo          User?     @relation(fields: [belogsToId], references: [id])
+  amount             Int?
+  expiresAt          DateTime?
+  subscribedAt       DateTime  @default(now())
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime? @updatedAt
+  Package            Package?  @relation(fields: [packageId], references: [id])
+  packageId          String?
+  stripeClientSecret String?
+}
+
+model Package {
+  id         String    @id @default(uuid())
+  name       String?   @unique
+  price      Int?
+  timePeriod Int?
+  payments   Payment[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime? @updatedAt
+}
+
+model Token {
+  id    String  @id @default(uuid())
+  value String? @unique
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  title     String?
+  published Boolean? @default(true)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+}
+
+model FicoScore {
+  id     String  @id @default(uuid())
+  score  String?
+  userId String
+  user   User    @relation(fields: [userId], references: [id])
+}
+
+model Transaction {
+  id               String    @id @default(uuid())
+  transaction_type String?
+  account          String?
+  amount           String?
+  description      String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime? @updatedAt
+
+  transactionDate DateTime @default(now())
+  transactionAmt  String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  agent  Agent[]
+  branch Branch[]
+
+  recieverId String?
+}
+
+model Account {
+  id               String    @id @default(uuid())
+  transaction_type String?
+  from_account     String?
+  to_account       String?
+  decrement        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime? @updatedAt
+
+  balance String?
+  userId  String
+  user    User    @relation(fields: [userId], references: [id])
+}
+
+model CreditAccount {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  accountType    String
+  accountNumber  String
+  balance        Float
+  limit          Float
+  paymentHistory PaymentHistory[]
+}
+
+model PaymentHistory {
+  id              String        @id @default(uuid())
+  date            DateTime
+  amount          Float
+  creditAccountId String
+  creditAccount   CreditAccount @relation(fields: [creditAccountId], references: [id])
+}
+
+model Equb {
+  id                 String   @id @default(uuid())
+  cretedAt           DateTime @default(now())
+  amount             String?
+  activate           Boolean  @default(false)
+  equbName           String?
+  equbType           String?
+  equbMemberLimit    String?
+  equbMonthlyPayment String?
+  equbCretorName     String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  selctedEqub SelectedEqub[]
+}
+
+model SelectedEqub {
+  id       String   @id @default(uuid())
+  cretedAt DateTime @default(now())
+
+  income          String?
+  emplymnetStatus String?
+  debt            String?
+  legalAgreement  String?
+  equbPurpose     String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  equbID String
+  equb   Equb   @relation(fields: [equbID], references: [id])
+}
+
+model Agent {
+  id            String      @id @default(uuid())
+  cretedAt      DateTime    @default(now())
+  name          String?
+  phone         String?
+  email         String?
+  password      String?
+  branchaproval Boolean     @default(false)
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  amout         String?
+  User          User?       @relation(fields: [userId], references: [id])
+  userId        String?
+}
+
+model Branch {
+  id            String      @id @default(uuid())
+  cretedAt      DateTime    @default(now())
+  name          String?
+  phone         String?
+  email         String?
+  adminAprival  Boolean     @default(false)
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  amout         String?
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+}
