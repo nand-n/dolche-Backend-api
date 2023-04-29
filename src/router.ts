@@ -3,12 +3,13 @@ import prisma from './db';
 import jwt from 'jsonwebtoken';
 import { emailVerificationSender, emailVerificationVerify, isVerified } from './handlers/verifyEmail';
 import moment from 'moment';
-import { PaymentHistory, Transactions } from './Instrumental/Bank/bank';
+// import { PaymentHistory, Transactions } from './Instrumental/Bank/bank';
 import { Fico } from './Instrumental/FIKO/fiko';
 import { ficoCalculator } from './Instrumental/FIKO/fikoCalculator';
 import { creditHistory } from './Instrumental/transsaction';
 import { creditWorthiness, equbWorthinesssTrainDataset } from './Fintech/Equb/Partials/equbWothiness';
 import routerEqub from './Fintech/Equb/equb';
+import routerWallet from './Fintech/Wallet/wallet';
 
 // import { Subscription } from './handlers/User/subscription';
 
@@ -19,6 +20,7 @@ const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 const router = Router()
 router.use('/equb',routerEqub)
 
+router.use('/wallet' , routerWallet)
 //email Verification sender
 
 
@@ -32,9 +34,9 @@ router.get('/isverified', isVerified)
 
 //Bank Transaction 
 // Endpoint for creating a new transaction 
-router.post('/newtransaction', Transactions)
+// router.post('/newtransaction', Transactions)
 //Fetch the payment History form DB and export it to xlsx file to be predicted in the ML   
-router.post('/payment-history', PaymentHistory)
+// router.post('/payment-history', PaymentHistory)
 //Fico Score Calculator 
 router.post('/fico-calculator', Fico)
 //Fico Score Calculator 2

@@ -6,11 +6,12 @@ import cors from 'cors'
 // import bcrypt from 'bcrypt'
 // import prisma from "../db";
 // import jwt from 'jsonwebtoken'
-import { createNewAdminUser, createNewUser, signIn } from './handlers/user'
+import { createNewAdminUser, createNewUser, createNewUserUser, signIn, signInAgent } from './handlers/user'
 import { protectRoute, userHandler } from './modules/auth'
 import { refreshToken } from './handlers/refreshToken'
 import { forgotPassword, forgotPasswordChanger } from './handlers/resetPassword'
-import { Transactions } from './Instrumental/Bank/bank'
+// import { Transactions } from './Instrumental/Bank/bank'
+import { CreateAgentAccount } from './Fintech/Agent/CreateAgentAccount/CreateAgentAccount'
 
 const app = express()
 
@@ -28,12 +29,17 @@ app.get('/', (req, res) => {
 // app.use('/api',protect, router)
 
 app.use('/api', protectRoute, router)
+app.post('/register-user', createNewUserUser)
 
 app.post('/register', createNewUser)
+app.post('/register-agent', CreateAgentAccount)
+
 app.post('/register-admin', createNewAdminUser)
+
 
 // app.post('/signin', userHandler ,signIn)
 app.post('/signin' , signIn)
+app.post('/signin-agent' , signInAgent)
 
 app.post('/forgot-password', forgotPassword)
 app.post('/password-changer', forgotPasswordChanger)

@@ -10,18 +10,18 @@ export const createNewUser = async (req, res) => {
   if (!email || !password) {
     return res.status(400).json({ error: "Email and password are required" });
   }
-     // Check if user already exists
+    //  Check if user already exists
   const existingPhone = await prisma.user.findUnique({
     where: { phone },
   });
-     if (existingPhone) {
+     if (existingPhone.phone) {
     return res.status(400).json({ error: "phone number already exist ,please Use another phone number" });
   }
   // Check if userEmail already exists
   const existingEmail = await prisma.user.findUnique({
     where: { email },
   });
-  if (existingEmail) {
+  if (existingEmail.email) {
     return res.status(400).json({ error: "User Email already exists,please use another" });
   }
 // Check if username already exists
@@ -29,7 +29,7 @@ export const createNewUser = async (req, res) => {
     where: { username },
   });
 
-  if (existingUsername) {
+  if (existingUsername.username) {
     return res.status(400).json({ error: "Username already exists,Try another username" });
   }
 
@@ -38,16 +38,15 @@ export const createNewUser = async (req, res) => {
           username: username,
           email: email,
           password: await hashPassword(password),
-          phone: phone,
+          phone: phone, 
           // token: ''
             
         },
-    })    
+    })   
     if (!user) {
         return res.status(400).json({errorMessage:"Faild to register the user"})
     }
        const tokens = createJWT(user)
-       
        console.log(tokens.refreshToken)
         //save refreshtoken to database
   await prisma.token.create({
@@ -68,6 +67,76 @@ export const createNewUser = async (req, res) => {
     res.status(500).json({ error: "Something went wrong with the server" });
     
      }
+}
+
+export const createNewUserUser = async (req, res) => {
+  try {
+     const { email, password ,username , phone} = req.body;
+ // Validate input
+if (!email || !password || !phone || !username) {
+ return res.status(400).json({ error: "Username , phone , Email and password are required" });
+}
+  // Check if phone already exists
+const existingPhone = await prisma.users.findFirst({
+ where: { 
+  phone 
+  },
+});
+  if (existingPhone ) {
+ return res.status(400).json({ error: "phone number already exist ,please Use another phone number" });
+}
+// Check if userEmail already exists
+const existingEmail = await prisma.users.findFirst({
+ where: { email },
+});
+if (existingEmail) {
+ return res.status(400).json({ error: "User Email already exists,please use another" });
+}
+// Check if username already exists
+const existingUsername = await prisma.users.findFirst({
+ where: { username },
+});
+
+if (existingUsername) {
+ return res.status(400).json({ error: "Username already exists,Try another username" });
+}
+
+ const user = await prisma.users.create({
+     data: {
+       username: username,
+       email: email,
+       password: await hashPassword(password),
+       phone: phone, 
+       balance: 25
+
+         
+     },
+ })    
+ if (!user) {
+     return res.status(400).json({errorMessage:"Faild to register the user"})
+ }
+    const tokens = createJWT(user)
+    
+    console.log(tokens.refreshToken)
+     //save refreshtoken to database
+// await prisma.token.create({
+//  data: {
+//    value: tokens.refreshToken,
+//    user: {
+//      connect: {
+//        id: user.id,
+//      },
+//    },
+//  },
+// })
+  
+    return  res.json({ tokens , user });
+      
+  } catch (err) {
+     console.log(err);
+ res.status(500).json({ error: `Something went wrong with the server or error with ${err.message}` });
+ 
+  }
 }
 
 //Create admin 
@@ -150,7 +219,7 @@ export const signIn = async (req, res) => {
   }
 
   // Check if user doesn't exists
-  const existingUser = await prisma.user.findUnique({
+  const existingUser = await prisma.users.findFirst({
     where: { username },
   });
 
@@ -159,12 +228,17 @@ export const signIn = async (req, res) => {
   }
 
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findFirst({
         where: {
             username: username,
+        },
+        select:{
+         password:true,
+         id:true
         }
+        
     })
- // Check if user doesn't exists
+//  Check if user doesn't exists
      if (!user) {
     return res.status(404).json({ error: "User not found" });
   }
@@ -179,23 +253,37 @@ export const signIn = async (req, res) => {
   if (!tokens) {
    return res.status(400).json({Message:"Error Generating Access Token and Refresh Token , Please Try Again."})
   }
+  const userInfo=await prisma.users.findUnique({
+    where:{
+      id:user.id
+    },
+    select:{
+      balance:true,
+      email:true,
+      phone:true,
+      username:true,
+      id:true
+    }
+
+  })
+  if(userInfo)
 
   //save refreshtoken to database
-  const saveTokenToDB = await prisma.token.create({
-    data: {
-      value: tokens.refreshToken,
-      user: {
-        connect: {
-          id: user.id,
-        },
-      },
-    },
-  })
-  if (!saveTokenToDB) {
-   return res.status(400).json({Message:"Error Saving Refresh token to the database , Please Try again. "})
-  }
+  // const saveTokenToDB = await prisma.token.create({
+  //   data: {
+  //     value: tokens.refreshToken,
+  //     user: {
+  //       connect: {
+  //         id: user.id,
+  //       },
+  //     },
+  //   },
+  // })
+  // if (!saveTokenToDB) {
+  //  return res.status(400).json({Message:"Error Saving Refresh token to the database , Please Try again. "})
+  // }
   // console.log(tokens.refreshToken)
-  return res.status(200).json({tokens})
+  return res.status(200).json({tokens,userInfo })
      } catch (error) {
       return res.status(500).json({
         message:`Error with Internal Server or Error with ${error.message}`
@@ -203,4 +291,72 @@ export const signIn = async (req, res) => {
      }
 }
 
+export const signInAgent = async (req, res) => {
+  const { password ,agentName } = req.body;
+
+
+try {
+
+// Validate input
+if (!agentName || !password) {
+return res.status(400).json({ error: "Agent's username and password are required" });
+}
+
+// Check if user doesn't exists
+const existingUser = await prisma.agents.findFirst({
+where: { name:agentName },
+});
+
+if (!existingUser) {
+return res.status(400).json({ error: "There is no registered agent user with this Username!!!" });
+}
+
+
+const user = await prisma.agents.findFirst({
+   where: {
+       name: agentName,
+   },
+   select:{
+    password:true,
+    id:true
+   }
+   
+})
+//  Check if user doesn't exists
+if (!user) {
+return res.status(404).json({ error: "User not found" });
+}
+
+//Check if the user password is valid 
+const isValid = await comparePassword(password, user.password)
+if (!isValid) {
+ return  res.status(401).json({ errorMessage: 'Please insert the Correct password!!!' })
+   
+}
+const tokens = createJWT(user)
+if (!tokens) {
+return res.status(400).json({Message:"Error Generating Access Token and Refresh Token , Please Try Again."})
+}
+const userInfo=await prisma.agents.findUnique({
+where:{
+ id:user.id
+},
+select:{
+ balance:true,
+ email:true,
+ phone:true,
+ name:true,
+ id:true
+}
+
+})
+if(userInfo)
+
+return res.status(200).json({tokens,userInfo })
+} catch (error) {
+ return res.status(500).json({
+   message:`Error with Internal Server or Error with ${error.message}`
+ })
+}
+}
 

@@ -23,6 +23,7 @@ model User {
   isAdmin          Boolean   @default(false)
   Token            Token[]
   Post             Post[]
+  balance          Int?      @default(0)
   verificationCode Int?
   isVerified       Boolean   @default(false)
   resetToken       String?
@@ -37,6 +38,7 @@ model User {
   selctedEqub   SelectedEqub[]
   branch        Branch[]
   agent         Agent[]
+  loan          Loan[]
 }
 
 model Payment {
@@ -88,13 +90,13 @@ model FicoScore {
 }
 
 model Transaction {
-  id               String    @id @default(uuid())
+  id               String  @id @default(uuid())
   transaction_type String?
   account          String?
-  amount           String?
-  description      String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime? @updatedAt
+
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
 
   transactionDate DateTime @default(now())
   transactionAmt  String?
@@ -102,10 +104,19 @@ model Transaction {
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
-  agent  Agent[]
-  branch Branch[]
+  usersId String
+  users   Users  @relation(fields: [usersId], references: [id])
+
+  agentsId String
+  agents   Agents   @relation(fields: [agentsId], references: [id])
+  agent    Agent[]
+  branch   Branch[]
 
   recieverId String?
+
+  recipientId String?
+  senderId    String?
+  amount      Int?
 }
 
 model Account {
@@ -117,9 +128,9 @@ model Account {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime? @updatedAt
 
-  balance String?
+  balance Float?
   userId  String
-  user    User    @relation(fields: [userId], references: [id])
+  user    User   @relation(fields: [userId], references: [id])
 }
 
 model CreditAccount {
@@ -177,17 +188,17 @@ model SelectedEqub {
 }
 
 model Agent {
-  id            String      @id @default(uuid())
-  cretedAt      DateTime    @default(now())
+  id            String       @id @default(uuid())
+  cretedAt      DateTime     @default(now())
   name          String?
   phone         String?
   email         String?
   password      String?
-  branchaproval Boolean     @default(false)
-  transactionId String
-  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  branchaproval Boolean      @default(false)
+  transactionId String?
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
   amout         String?
-  User          User?       @relation(fields: [userId], references: [id])
+  User          User?        @relation(fields: [userId], references: [id])
   userId        String?
 }
 
@@ -203,4 +214,74 @@ model Branch {
   amout         String?
   userId        String
   user          User        @relation(fields: [userId], references: [id])
+}
+
+model Loan {
+  id                 String   @id @default(uuid())
+  cretedAt           DateTime @default(now())
+  amount             Float?
+  facilitationFee    Float?
+  penaltyFee         Float?
+  facilitationAmount Float?
+  penaltyAmount      Float?
+  totalAmount        Float?
+  userId             String
+  user               User     @relation(fields: [userId], references: [id])
+}
+
+// Define the schema for the users table
+model Users {
+  id           String         @id @default(uuid())
+  email        String?        @unique
+  username     String?
+  password     String?
+  balance      Float?         @default(0)
+  phone        String?        @unique
+  createdAt    DateTime?      @default(now())
+  updatedAt    DateTime?      @updatedAt
+  transactions Transactions[]
+  agents       Agents[]       @relation("agent_users")
+  Transaction  Transaction[]
+  deposits     Deposit[]
+}
+
+// Define the schema for the transactions table
+model Transactions {
+  id        String    @id @default(uuid())
+  type      String?
+  amount    Float?
+  userId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  user      Users     @relation(fields: [userId], references: [id])
+  agentId   String?
+  agent     Agents?   @relation("agent_transactions", fields: [agentId], references: [id])
+}
+
+// Define the schema for the agents table
+model Agents {
+  id           String         @id @unique @default(uuid())
+  name         String?
+  email        String?        @unique
+  phone        String?        @unique
+  password     String?
+  balance      Float?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime?      @updatedAt
+  users        Users[]        @relation("agent_users")
+  transactions Transactions[] @relation("agent_transactions")
+  Transaction  Transaction[]
+  deposits     Deposit[]
+}
+
+model Deposit {
+  id        String   @id @unique @default(uuid())
+  amount    Float?
+  status    String
+  users     Users    @relation(fields: [userId], references: [id])
+  userId    String
+  agents    Agents   @relation(fields: [agentId], references: [id])
+  agentId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
