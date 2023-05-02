@@ -231,18 +231,25 @@ model Loan {
 
 // Define the schema for the users table
 model Users {
-  id           String         @id @default(uuid())
-  email        String?        @unique
-  username     String?
-  password     String?
-  balance      Float?         @default(0)
-  phone        String?        @unique
-  createdAt    DateTime?      @default(now())
-  updatedAt    DateTime?      @updatedAt
-  transactions Transactions[]
-  agents       Agents[]       @relation("agent_users")
-  Transaction  Transaction[]
-  deposits     Deposit[]
+  id              String            @id @default(uuid())
+  email           String?           @unique
+  username        String?
+  password        String?
+  balance         Float?            @default(0)
+  phone           String?           @unique
+  createdAt       DateTime?         @default(now())
+  updatedAt       DateTime?         @updatedAt
+  transactions    Transactions[]
+  agents          Agents[]          @relation("agent_users")
+  Transaction     Transaction[]
+  deposits        Deposit[]
+  FicoScores      FicoScores[]
+  PaymentHistoryy PaymentHistoryy[]
+  AmountsOwed     AmountsOwed[]
+  HistoryLength   HistoryLength[]
+  NewCredit       NewCredit[]
+  CreditMix       CreditMix[]
+  Withdraw        Withdraw[]
 }
 
 // Define the schema for the transactions table
@@ -272,6 +279,7 @@ model Agents {
   transactions Transactions[] @relation("agent_transactions")
   Transaction  Transaction[]
   deposits     Deposit[]
+  Withdraw     Withdraw[]
 }
 
 model Deposit {
@@ -285,3 +293,83 @@ model Deposit {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Withdraw {
+  id        String   @id @unique @default(uuid())
+  amount    Float?
+  status    String?
+  code      Float?
+  users     Users    @relation(fields: [userId], references: [id])
+  userId    String
+  agents    Agents   @relation(fields: [agentId], references: [id])
+  agentId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FicoScores {
+  id     String  @id @unique @default(uuid())
+  score  Float?
+  status String?
+  users  Users   @relation(fields: [userId], references: [id])
+  userId String
+}
+
+model PaymentHistoryy {
+  id             String @id @default(uuid())
+  latePayments   Int
+  missedPayments Int
+  defaults       Int
+
+  userId String
+  users  Users  @relation(fields: [userId], references: [id])
+}
+
+model AmountsOwed {
+  id String @id @default(uuid())
+
+  creditLimit Int
+  balance     Int
+
+  userId String
+  users  Users  @relation(fields: [userId], references: [id])
+}
+
+model HistoryLength {
+  id String @id @default(uuid())
+
+  lengthMonths Int
+
+  userId String
+  users  Users  @relation(fields: [userId], references: [id])
+}
+
+model NewCredit {
+  id String @id @default(uuid())
+
+  numInquiries Int
+  numAccounts  Int
+
+  userId String
+  users  Users  @relation(fields: [userId], references: [id])
+}
+
+model CreditMix {
+  id String @id @default(uuid())
+
+  numCreditTypes Int
+
+  userId String
+  users  Users  @relation(fields: [userId], references: [id])
+}
+
+// model Account {
+//   id                Int            @id @default(autoincrement())
+//   name              String
+//   email             String
+//   paymentHistories  PaymentHistory[]
+//   amountsOwed       AmountsOwed[]
+//   historyLengths    HistoryLength[]
+//   newCredits        NewCredit[]
+//   creditMixes       CreditMix[]
+// }

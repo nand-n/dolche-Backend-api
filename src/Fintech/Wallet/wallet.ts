@@ -9,6 +9,8 @@ import { Deposite, DepositeWithEvent } from './Transaction/Deposite/deposite';
 import { Balance } from './Info/Balance';
 import { depositeApproval } from './Transaction/Deposite/depositeAproval';
 import { userDepositeByAgent } from './Transaction/Deposite/depositeByAgent';
+import { WithdrawWithEvent } from './Transaction/Withdraw/WithdrawIniciate';
+import { WithdrawApproval } from './Transaction/Withdraw/WithdrawAproval';
 
 const routerWallet = Router()
 routerWallet.post('/withdraw',Withdraw )
@@ -21,9 +23,8 @@ routerWallet.post('/deposite',Deposite )
 routerWallet.post('/DepositeWithEvent',DepositeWithEvent )
 routerWallet.post('/depositeApproval',depositeApproval )
 routerWallet.post('/userDepositeByAgent',userDepositeByAgent )
-
-
-
+routerWallet.post('/WithdrawWithEvent',WithdrawWithEvent )
+routerWallet.post('/WithdrawApproval',WithdrawApproval )
 
 
 routerWallet.post('/p2ptransaction', P2PTransaction )

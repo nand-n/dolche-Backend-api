@@ -10,6 +10,8 @@ import { creditHistory } from './Instrumental/transsaction';
 import { creditWorthiness, equbWorthinesssTrainDataset } from './Fintech/Equb/Partials/equbWothiness';
 import routerEqub from './Fintech/Equb/equb';
 import routerWallet from './Fintech/Wallet/wallet';
+import { calculateFico, vaidateFactors } from './Instrumental/FIKO/FICO_Score';
+import { creditLimitCalc , ficoScoreCalc } from './Instrumental/FIKO/Fico-score';
 
 // import { Subscription } from './handlers/User/subscription';
 
@@ -37,10 +39,17 @@ router.get('/isverified', isVerified)
 // router.post('/newtransaction', Transactions)
 //Fetch the payment History form DB and export it to xlsx file to be predicted in the ML   
 // router.post('/payment-history', PaymentHistory)
-//Fico Score Calculator 
+//Fico Score Calculator
 router.post('/fico-calculator', Fico)
 //Fico Score Calculator 2
 router.post('/fico-calculator-2', ficoCalculator)
+router.post('/calculateFico',vaidateFactors, calculateFico)
+
+
+router.post('/ficoScore', ficoScoreCalc)
+router.post('/creditLimit', creditLimitCalc)
+
+
 
 //Credit History 
 // Calculate credit score based on transaction history and debt
