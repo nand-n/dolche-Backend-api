@@ -131,6 +131,9 @@ export const ficoScoreCalc = async  (req: Request, res: Response) => {
       status:rating,
       userId:user.id
 
+    },include:{
+      users:true
+
     }
   })
   if(!ficoScoreDb){

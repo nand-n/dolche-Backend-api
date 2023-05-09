@@ -11,12 +11,14 @@ import { depositeApproval } from './Transaction/Deposite/depositeAproval';
 import { userDepositeByAgent } from './Transaction/Deposite/depositeByAgent';
 import { WithdrawWithEvent } from './Transaction/Withdraw/WithdrawIniciate';
 import { WithdrawApproval } from './Transaction/Withdraw/WithdrawAproval';
+import { userInfo } from './Info/UserInfo';
 
 const routerWallet = Router()
 routerWallet.post('/withdraw',Withdraw )
 
 routerWallet.post('/transactionHistory',transactionHistory)
 routerWallet.post('/balance',Balance)
+routerWallet.post('/userInfo',userInfo)
 
 
 routerWallet.post('/deposite',Deposite )
